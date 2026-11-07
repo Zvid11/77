@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firststep — Платформа шкільних портфоліо</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Стилізація скроллбару */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        /* Анімація плавного появи */
+        .fade-in {
+            animation: fadeIn 0.25s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.97); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Анімація для оверлею Пеннівайза */
+        @keyframes pennywiseJumpscare {
+            0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+            30% { transform: scale(1.1) rotate(5deg); opacity: 1; }
+            50% { transform: scale(1.0) rotate(0deg); opacity: 1; }
+            80% { transform: scale(1.05) rotate(-3deg); opacity: 1; }
+            100% { transform: scale(0.2) rotate(15deg); opacity: 0; }
+        }
+        .pennywise-active {
+            animation: pennywiseJumpscare 3.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Анімація тривоги для Адмін-панелі */
+        @keyframes strobeAlarm {
+            0%, 100% { background-color: rgba(225, 29, 72, 0); }
+            50% { background-color: rgba(225, 29, 72, 0.45); }
+        }
+        .alarm-strobe {
+            animation: strobeAlarm 0.4s infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col" id="appBody">
+
+    <!-- Оверлей для ефекту Admin Abuse (Пеннівайз) -->
+    <div id="pennywiseOverlay" class="fixed inset-0 z-[100] pointer-events-none hidden flex flex-col items-center justify-center bg-black/80 backdrop-blur-md">
+        <div id="pennywiseContainer" class="flex flex-col items-center">
+            <!-- Inline SVG Pennywise Icon / Illustration -->
+            <svg class="w-72 h-72 sm:w-96 sm:h-96 filter drop-shadow-[0_0_50px_rgba(225,29,72,0.8)]" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Face Contour -->
+                <path d="M100 20C55 20 25 55 25 105C25 150 55 185 100 185C145 185 175 150 175 105C175 55 145 20 100 20Z" fill="#F8FAFC"/>
+                <!-- Hair -->
+                <path d="M20 90C10 70 15 40 35 25C45 40 40 65 30 80Z" fill="#EA580C"/>
+                <path d="M180 90C190 70 185 40 165 25C155 40 160 65 170 80Z" fill="#EA580C"/>
+                <path d="M35 35C25 15 45 5 70 15C55 25 45 35 35 35Z" fill="#EA580C"/>
+                <path d="M165 35C175 15 155 5 130 15C145 25 155 35 165 35Z" fill="#EA580C"/>
+                <path d="M70 15C85 0 115 0 130 15C110 10 90 10 70 15Z" fill="#D97706"/>
+                <!-- Red Lines (Makeup) -->
+                <path d="M60 70 Q62 105 55 135 Q50 155 45 160 Q60 150 68 135 Q72 105 70 75 Z" fill="#DC2626"/>
+                <path d="M140 70 Q138 105 145 135 Q150 155 155 160 Q140 150 132 135 Q128 105 130 75 Z" fill="#DC2626"/>
+                <!-- Eyes -->
+                <ellipse cx="65" cy="85" rx="14" ry="10" fill="#0F172A"/>
+                <ellipse cx="135" cy="85" rx="14" ry="10" fill="#0F172A"/>
+                <circle cx="65" cy="85" r="6" fill="#F59E0B"/>
+                <circle cx="135" cy="85" r="6" fill="#F59E0B"/>
+                <circle cx="63" cy="83" r="2" fill="#FFFFFF"/>
+                <circle cx="133" cy="83" r="2" fill="#FFFFFF"/>
+                <!-- Nose -->
+                <circle cx="100" cy="110" r="14" fill="#DC2626"/>
+                <circle cx="96" cy="106" r="4" fill="#FFAAAA"/>
+                <!-- Evil Smile -->
+                <path d="M45 135 Q100 180 155 135 Q140 175 100 175 Q60 175 45 135 Z" fill="#7F1D1D"/>
+                <path d="M50 138 Q100 165 150 138 Q100 150 50 138 Z" fill="#FFFFFF"/>
+                <!-- Sharp Teeth -->
+                <polygon points="70,140 75,150 80,140" fill="#FEF08A"/>
+                <polygon points="95,142 100,155 105,142" fill="#FEF08A"/>
+                <polygon points="120,140 125,150 130,140" fill="#FEF08A"/>
+            </svg>
+            <div class="text-red-500 font-black text-3xl sm:text-5xl tracking-widest mt-4 uppercase animate-pulse drop-shadow-[0_0_20px_rgba(225,29,72,1)]">
+                IT'S TIME TO FLOAT! 🎈
+            </div>
+        </div>
+    </div>
+
+    <!-- Шапка сайту -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="filterCategory('all')">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-xl font-black shadow-md shadow-indigo-200">
+                    FS
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+                        Firststep
+                    </h1>
+                    <p class="text-xs text-slate-500 font-medium">Шкільні портфоліо</p>
+                </div>
+            </div>
+
+            <!-- Права частина: Сповіщення (Дзвіночок) та Додавання -->
+            <div class="flex items-center gap-3">
+                <!-- Дзвіночок сповіщень -->
+                <div class="relative">
+                    <button onclick="toggleNotifications()" class="relative p-2.5 text-slate-600 hover:text-indigo-600 hover:bg-slate-100 rounded-xl transition">
+                        <i class="fa-solid fa-bell text-lg"></i>
+                        <span id="notifBadge" class="hidden absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">0</span>
+                    </button>
+
+                    <!-- Выпадающее окно уведомлений -->
+                    <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden fade-in">
+                        <div class="p-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                            <span class="font-bold text-xs text-slate-700 uppercase tracking-wider">Повідомлення</span>
+                            <button onclick="clearNotifications()" class="text-[11px] text-indigo-600 hover:underline">Очистити</button>
+                        </div>
+                        <div id="notifList" class="max-h-80 overflow-y-auto divide-y divide-slate-100">
+                            <!-- Список повідомлень -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Блок Користувача / Авторизація -->
+                <div id="userAuthBlock" class="flex items-center gap-2">
+                    <button onclick="openAuthModal()" class="text-xs sm:text-sm font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-2 rounded-xl transition">
+                        <i class="fa-solid fa-right-to-bracket mr-1"></i> Увійти
+                    </button>
+                </div>
+
+                <button onclick="openCreateModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl transition duration-200 shadow-md shadow-indigo-100 flex items-center gap-2 text-sm sm:text-base">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span class="hidden sm:inline">Опублікувати портфоліо</span>
+                    <span class="sm:hidden">Додати</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основний контент -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Баннер-привітання -->
+        <section class="mb-8 bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+            <div class="relative z-10 max-w-4xl">
+                <span class="inline-block px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs font-semibold uppercase tracking-wider mb-3 text-indigo-200">Платформа Firststep</span>
+                <h2 class="text-2xl sm:text-4xl font-extrabold mb-3 leading-tight">Продемонструй свої досягнення та знайди першу роботу чи стажування!</h2>
+                <p class="text-indigo-100 text-sm sm:text-base mb-6">Опублікуй власні проекти, збирай портфоліо за напрямком професії та будь поміченим роботодавцями.</p>
+                
+                <!-- Фільтр за ПРОФЕСІЯМИ ТА НАПРЯМКАМИ ДЛЯ РОБОТИ -->
+                <div id="profFilterContainer" class="flex flex-wrap gap-2">
+                    <button onclick="filterProfession('all')" class="prof-btn active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-emerald-400 text-slate-900 shadow transition">Усі професії</button>
+                    <button onclick="filterProfession('Frontend Developer')" class="prof-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-white/10 hover:bg-white/20 text-white transition">Frontend Developer</button>
+                    <button onclick="filterProfession('Python / Backend')" class="prof-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-white/10 hover:bg-white/20 text-white transition">Python / Backend</button>
+                    <button onclick="filterProfession('UI/UX Designer')" class="prof-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-white/10 hover:bg-white/20 text-white transition">UI/UX Designer</button>
+                    <button onclick="filterProfession('2D/3D Artist')" class="prof-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-white/10 hover:bg-white/20 text-white transition">2D/3D Artist</button>
+                    <button onclick="filterProfession('Robotics Engineer')" class="prof-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-white/10 hover:bg-white/20 text-white transition">Robotics Engineer</button>
+                    <button onclick="filterProfession('Data Analyst')" class="prof-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-white/10 hover:bg-white/20 text-white transition">Data Analyst</button>
+                    <button onclick="filterProfession('Content / Copywriter')" class="prof-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-white/10 hover:bg-white/20 text-white transition">Content / Copywriter</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Заголовок розділу -->
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-slate-800" id="sectionTitle">Портфоліо кандидатів</h3>
+            <span class="text-xs text-slate-500 hidden sm:inline">Натисніть "Відкрити" або зробіть подвійний клік по картці</span>
+        </div>
+
+        <!-- Сітка КВАДРАТНИХ карток портфоліо -->
+        <div id="portfolioGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Квадратні картки -->
+        </div>
+
+        <!-- Порожній стан -->
+        <div id="emptyState" class="hidden text-center py-16 bg-white rounded-3xl border border-dashed border-slate-300 my-8">
+            <i class="fa-solid fa-user-doctor text-5xl text-slate-300 mb-4"></i>
+            <h4 class="text-lg font-semibold text-slate-600">Не знайдено робіт за вибраним фільтром</h4>
+            <p class="text-sm text-slate-400 mt-1 mb-4">Будьте першим, хто опублікує портфоліо у цій категорії!</p>
+            <button onclick="openCreateModal()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-medium text-sm hover:bg-indigo-700 transition">
+                Додати роботу
+            </button>
+        </div>
+    </main>
+
+    <!-- МОДАЛЬНЕ ВІКНО РЕЄСТРАЦІЇ / ВХОДУ -->
+    <div id="authModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden fade-in relative">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <h3 id="authModalTitle" class="font-bold text-slate-800 text-lg">Вхід у Firststep</h3>
+                <button onclick="closeAuthModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="authForm" onsubmit="handleAuthSubmit(event)" class="p-6 space-y-4">
+                <div id="authError" class="hidden p-3 bg-rose-50 border border-rose-200 text-rose-600 text-xs rounded-xl font-medium"></div>
+
+                <div id="emailField">
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email *</label>
+                    <input type="email" id="authEmail" placeholder="student@example.com"
+                           class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Логін *</label>
+                    <input type="text" id="authUsername" required placeholder="Ваш логін (мін. 3 символи)"
+                           class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Пароль *</label>
+                    <input type="password" id="authPassword" required placeholder="Мін. 6 символів"
+                           class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <button type="submit" id="authSubmitBtn" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition text-sm shadow-md">
+                    Увійти
+                </button>
+
+                <div class="text-center pt-2">
+                    <button type="button" onclick="toggleAuthMode()" id="toggleAuthBtn" class="text-xs text-indigo-600 hover:underline font-medium">
+                        Немає акаунта? Зареєструватися
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНЕ ВІКНО АДМІН-ПАНЕЛІ -->
+    <div id="adminModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4">
+        <div class="bg-white w-full max-w-6xl h-[95vh] rounded-3xl shadow-2xl overflow-hidden fade-in flex flex-col relative">
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-900 text-white">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-user-shield text-emerald-400 text-xl"></i>
+                    <h3 class="font-bold text-lg">Розширена Панель Адміністратора Firststep (20+ Функцій)</h3>
+                </div>
+                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+                <!-- Статистика -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="bg-indigo-50 p-4 rounded-2xl border border-indigo-100">
+                        <div class="text-xs text-indigo-600 font-bold uppercase">Всього портфоліо</div>
+                        <div id="adminStatPortfolios" class="text-2xl font-black text-indigo-900 mt-1">0</div>
+                    </div>
+                    <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
+                        <div class="text-xs text-emerald-600 font-bold uppercase">Користувачів</div>
+                        <div id="adminStatUsers" class="text-2xl font-black text-emerald-900 mt-1">0</div>
+                    </div>
+                    <div class="bg-amber-50 p-4 rounded-2xl border border-amber-100">
+                        <div class="text-xs text-amber-600 font-bold uppercase">Фільтр мату</div>
+                        <div id="adminStatFilterStatus" class="text-lg font-black text-amber-900 mt-1">Строгий (Увімк)</div>
+                    </div>
+                    <div class="bg-rose-50 p-4 rounded-2xl border border-rose-100">
+                        <div class="text-xs text-rose-600 font-bold uppercase">Переглядів онлайн</div>
+                        <div id="adminStatOnline" class="text-2xl font-black text-rose-900 mt-1">14</div>
+                    </div>
+                </div>
+
+                <!-- БЛОК ADMIN ABUSE ТА ГРОМКИХ ЗВУКІВ (4 Функції) -->
+                <div class="bg-gradient-to-r from-rose-950 via-slate-900 to-purple-950 p-5 rounded-2xl border border-rose-800 text-white shadow-lg space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-bullhorn text-rose-400 text-lg"></i>
+                            <h4 class="font-bold text-base text-rose-200 uppercase tracking-wider">Гучні Звукові Ефекти &amp; Admin Abuse</h4>
+                        </div>
+                        <span class="text-[10px] font-bold uppercase px-2 py-0.5 bg-rose-500/30 text-rose-300 rounded border border-rose-500/40">Звуковий двигун</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2">
+                        <!-- Функція 1 -->
+                        <button onclick="triggerPennywiseAbuse()" class="p-3 bg-rose-700 hover:bg-rose-600 text-white rounded-xl text-xs font-bold transition shadow flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-ghost"></i> 1. Pennywise + Screamer
+                        </button>
+                        <!-- Функція 2 -->
+                        <button onclick="triggerSoundEffect('alarm')" class="p-3 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold transition shadow flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-triangle-exclamation"></i> 2. Повітряна Сирена
+                        </button>
+                        <!-- Функція 3 -->
+                        <button onclick="triggerSoundEffect('laser')" class="p-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition shadow flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-bolt"></i> 3. Кібер-Лазер
+                        </button>
+                        <!-- Функція 4 -->
+                        <button onclick="triggerStrobeAlarm()" class="p-3 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold transition shadow flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-lightbulb"></i> 4. Стробоскоп + Сирена
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 20+ ФУНКЦІЙ УПРАВЛІННЯ (Таби/Секції) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                    <!-- Секція A: Керування користувачами (5 Функцій) -->
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl space-y-3">
+                        <h4 class="font-bold text-slate-800 text-xs uppercase flex items-center gap-2">
+                            <i class="fa-solid fa-users-gear text-indigo-600"></i> Користувачі (5 інструментів)
+                        </h4>
+                        <div class="space-y-2">
+                            <!-- Функція 5 -->
+                            <button onclick="adminBanUserPrompt()" class="w-full text-left px-3 py-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 flex items-center justify-between">
+                                <span>5. Заблокувати / Замутити користувача</span>
+                                <i class="fa-solid fa-ban text-rose-500"></i>
+                            </button>
+                            <!-- Функція 6 -->
+                            <button onclick="adminIpBlockPrompt()" class="w-full text-left px-3 py-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 flex items-center justify-between">
+                                <span>6. Симуляція бану IP-адреси</span>
+                                <i class="fa-solid fa-network-wired text-amber-500"></i>
+                            </button>
+                            <!-- Функція 7 -->
+                            <button onclick="adminResetPasswordPrompt()" class="w-full text-left px-3 py-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 flex items-center justify-between">
+                                <span>7. Скинути пароль користувачу</span>
+                                <i class="fa-solid fa-key text-indigo-500"></i>
+                            </button>
+                            <!-- Функція 8 -->
+                            <button onclick="adminGrantRolePrompt()" class="w-full text-left px-3 py-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 flex items-center justify-between">
+                                <span>8. Надати права модератора/адміна</span>
+                                <i class="fa-solid fa-user-shield text-emerald-500"></i>
+                            </button>
+                            <!-- Функція 9 -->
+                            <button onclick="adminClearAllUsers()" class="w-full text-left px-3 py-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 flex items-center justify-between">
+                                <span>9. Очистити список усіх акаунтів</span>
+                                <i class="fa-solid fa-trash-arrow-up text-rose-600"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Секція B: Контент та модерація (4 Функції) -->
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl space-y-3">
+                        <h4 class="font-bold text-slate-800 text-xs uppercase flex items-center gap-2">
+                            <i class="fa-solid fa-folder-tree text-emerald-600"></i> Портфоліо та Контент (4 інструменти)
+                        </h4>
+                        <div class="space-y-2">
+                            <!-- Функція 10 -->
+                            <button onclick="adminDeleteAllPortfolios()" class="w-full text-left px-3 py-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 flex items-center justify-between">
+                                <span>10. Видалити УСІ портфоліо</span>
+                                <i class="fa-solid fa-fire text-rose-600"></i>
+                            </button>
+                            <!-- Функція 11 -->
+                            <button onclick="adminFilterSpam()" class="w-full text-left px-3 py-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 flex items-center justify-between">
+                                <span>11. Авто-очищення від спаму</span>
+                                <i class="fa-solid fa-broom text-amber-500"></i>
+                            </button>
+                            <!-- Функція 12 -->
+                            <button onclick="adminExportJSON()" class="w-full text-left px-3 py-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 flex items-center justify-between">
+                                <span>12. Експортувати портфоліо в JSON</span>
+                                <i class="fa-solid fa-file-code text-indigo-500"></i>
+                            </button>
+                            <!-- Функція 13 -->
+                            <button onclick="adminQuickApproveAll()" class="w-full text-left px-3 py-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 flex items-center justify-between">
+                                <span>13. Швидке підтвердження модерації</span>
+                                <i class="fa-solid fa-check-double text-emerald-500"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Секція C: Системний контроль (5 Функцій) -->
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl space-y-3">
+                        <h4 class="font-bold text-slate-800 text-xs uppercase flex items-center gap-2">
+                            <i class="fa-solid fa-sliders text-amber-600"></i> Налаштування Сервера (5 інструментів)
+                        </h4>
+                        <div class="space-y-2">
+                            <!-- Функція 14 -->
+                            <button onclick="adminToggleMaintenance()" class="w-full text-left px-3 py-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 flex items-center justify-between">
+                                <span>14. Режим обслуговування (Maintenance)</span>
+                                <i class="fa-solid fa-power-off text-rose-500"></i>
+                            </button>
+                            <!-- Функція 15 -->
+                            <button onclick="adminToggleStrictProfanity()" class="w-full text-left px-3 py-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 flex items-center justify-between">
+                                <span>15. Переключити фільтр мату</span>
+                                <i class="fa-solid fa-shield-halved text-indigo-500"></i>
+                            </button>
+                            <!-- Функція 16 -->
+                            <button onclick="adminClearLogs()" class="w-full text-left px-3 py-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 flex items-center justify-between">
+                                <span>16. Очистити журнал системних логів</span>
+                                <i class="fa-solid fa-eraser text-slate-500"></i>
+                            </button>
+                            <!-- Функція 17 -->
+                            <button onclick="adminBroadcastToastPrompt()" class="w-full text-left px-3 py-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 flex items-center justify-between">
+                                <span>17. Масова розсилка повідомлення</span>
+                                <i class="fa-solid fa-tower-broadcast text-emerald-500"></i>
+                            </button>
+                            <!-- Функція 18 -->
+                            <button onclick="adminRefreshMetrics()" class="w-full text-left px-3 py-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 flex items-center justify-between">
+                                <span>18. Перерахувати лічильники метрик</span>
+                                <i class="fa-solid fa-arrows-rotate text-blue-500"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Системний контроль та Дамп Пам'яті (3 Функції) -->
+                <div class="bg-slate-900 text-white p-4 rounded-2xl space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-xs uppercase text-emerald-400 flex items-center gap-2">
+                            <i class="fa-solid fa-terminal"></i> Аналітика та Системні утиліти (3 інструменти)
+                        </h4>
+                        <span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded">Terminal Control</span>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3">
+                        <!-- Функція 19 -->
+                        <button onclick="adminDumpSystemState()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-slate-200 border border-slate-700 transition">
+                            19. Дамп стану системи в консоль
+                        </button>
+                        <!-- Функція 20 -->
+                        <button onclick="adminSimulateServerLoad()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-amber-400 border border-slate-700 transition">
+                            20. Симуляція навантаження сервера
+                        </button>
+                        <!-- Функція 21 -->
+                        <button onclick="adminGenerateSecurityAudit()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-emerald-400 border border-slate-700 transition">
+                            21. Згенерувати звіт безпеки
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ПАНЕЛЬ АКТИВНОСТІ ДОДАТКУ -->
+                <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-slate-800 text-sm uppercase flex items-center gap-2">
+                            <i class="fa-solid fa-chart-line text-indigo-600"></i> Панель Активності Додатку
+                        </h4>
+                        <span class="text-xs text-emerald-600 font-semibold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Оновлюється в реальному часі
+                        </span>
+                    </div>
+
+                    <!-- Візуальні шкали активності -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-white p-3.5 rounded-xl border border-slate-200">
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-slate-600">Перегляди карточок</span>
+                                <span class="text-indigo-600 font-bold" id="activityViewsVal">84%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div id="activityViewsBar" class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: 84%"></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-3.5 rounded-xl border border-slate-200">
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-slate-600">Відправлено повідомлень</span>
+                                <span class="text-emerald-600 font-bold" id="activityMsgsVal">62%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div id="activityMsgsBar" class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 62%"></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-3.5 rounded-xl border border-slate-200">
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-slate-600">Навантаження платформи</span>
+                                <span class="text-amber-600 font-bold" id="activityLoadVal">28%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div id="activityLoadBar" class="bg-amber-500 h-2 rounded-full transition-all duration-500" style="width: 28%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Журнал останніх дій (Log) -->
+                    <div>
+                        <div class="text-xs font-bold text-slate-500 uppercase mb-2">Лог останніх подій у додатку</div>
+                        <div id="adminActivityLog" class="bg-slate-900 text-slate-200 p-3 rounded-xl text-xs font-mono max-h-36 overflow-y-auto space-y-1 divide-y divide-slate-800">
+                            <!-- Логи активності -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Управління Портфоліо -->
+                <div>
+                    <h4 class="font-bold text-slate-800 text-sm uppercase mb-3">Модерація Портфоліо</h4>
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden">
+                        <table class="w-full text-left text-xs text-slate-600">
+                            <thead class="bg-slate-100 text-slate-700 uppercase font-bold border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3">Назва</th>
+                                    <th class="p-3">Автор</th>
+                                    <th class="p-3">Професія</th>
+                                    <th class="p-3 text-right">Дія</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminPortfolioTable" class="divide-y divide-slate-200">
+                                <!-- Список портфоліо для видалення -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Управління користувачами -->
+                <div>
+                    <h4 class="font-bold text-slate-800 text-sm uppercase mb-3">Зареєстровані Користувачі</h4>
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden">
+                        <table class="w-full text-left text-xs text-slate-600">
+                            <thead class="bg-slate-100 text-slate-700 uppercase font-bold border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3">Логін</th>
+                                    <th class="p-3">Email</th>
+                                    <th class="p-3">Статус</th>
+                                    <th class="p-3">Роль</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminUserTable" class="divide-y divide-slate-200">
+                                <!-- Список користувачів -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНЕ ВІКНО ПОРТФОЛІО (80% екрану) -->
+    <div id="viewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div class="bg-white w-full h-[90vh] sm:h-[80vh] max-w-6xl rounded-3xl shadow-2xl overflow-hidden flex flex-col fade-in relative">
+            
+            <!-- Кнопка Закриття -->
+            <button onclick="closeViewModal()" class="absolute top-4 right-4 z-20 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 shadow-md transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+                <!-- Ліва частина: Деталі Портфоліо -->
+                <div class="w-full md:w-7/12 lg:w-2/3 h-full overflow-y-auto p-6 sm:p-8 border-b md:border-b-0 md:border-r border-slate-200">
+                    <!-- Напрямок / Професія -->
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <div class="flex items-center gap-2">
+                            <span id="modalProfession" class="px-3 py-1 bg-emerald-50 text-emerald-700 font-bold text-xs rounded-lg uppercase tracking-wider">
+                                Професія
+                            </span>
+                        </div>
+                        <!-- Кнопка видалення портфоліо -->
+                        <button onclick="deleteCurrentPortfolio()" class="text-rose-500 hover:text-rose-700 text-xs font-semibold flex items-center gap-1.5 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition mr-10 sm:mr-0">
+                            <i class="fa-regular fa-trash-can"></i> Видалити з сайту
+                        </button>
+                    </div>
+
+                    <!-- Назва та Автор -->
+                    <h2 id="modalTitle" class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-2">Назва Портфоліо</h2>
+                    <div class="flex items-center gap-3 mb-6">
+                        <div id="modalAvatar" class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-base shadow">
+                            А
+                        </div>
+                        <div>
+                            <div id="modalAuthor" class="font-bold text-slate-800 text-sm">Ім'я Учня</div>
+                            <div class="text-xs text-slate-400">Автор роботи</div>
+                        </div>
+                    </div>
+
+                    <!-- Зображення проекту -->
+                    <div class="mb-6 rounded-2xl overflow-hidden bg-slate-100 max-h-72 flex items-center justify-center border border-slate-200">
+                        <img id="modalImage" src="" alt="Прев'ю проекту" class="w-full h-full object-cover">
+                    </div>
+
+                    <!-- Повний опис -->
+                    <div class="space-y-3 mb-8">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Опис роботи та навичок</h3>
+                        <p id="modalDescription" class="text-slate-600 leading-relaxed whitespace-pre-line text-sm sm:text-base">
+                            Повний текст опису роботи...
+                        </p>
+                    </div>
+
+                    <!-- Нижній блок: Кнопка відкриття чату поруч -->
+                    <div class="pt-6 border-t border-slate-100 flex items-center justify-between">
+                        <div class="text-xs text-slate-400">Бажаєте запропонувати проект чи роботу?</div>
+                        <button id="openChatBtn" onclick="toggleChatPanel()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-xl transition flex items-center gap-2 text-sm shadow-sm">
+                            <i class="fa-regular fa-comment-dots"></i>
+                            <span id="openChatBtnText">Написати автору</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Права частина: Чат з автором -->
+                <div id="chatPanel" class="hidden w-full md:w-5/12 lg:w-1/3 h-full flex flex-col bg-slate-50 border-l border-slate-200 transition-all">
+                    <!-- Шапка чату -->
+                    <div class="p-4 bg-white border-b border-slate-200 flex items-center justify-between shadow-sm">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm">Чат з автором</h4>
+                                <p id="chatAuthorName" class="text-[11px] text-slate-400">Надіслати прямо в повідомлення</p>
+                            </div>
+                        </div>
+                        <button onclick="toggleChatPanel()" class="text-slate-400 hover:text-slate-600 p-1">
+                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- Список надісланих повідомлень -->
+                    <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3">
+                        <div class="text-center py-6 text-slate-400 text-xs">
+                            Напишіть повідомлення автору. Воно надійде йому безпосередньо у сповіщення.
+                        </div>
+                    </div>
+
+                    <!-- Форма надсилання -->
+                    <form onsubmit="sendDirectMessage(event)" class="p-3 bg-white border-t border-slate-200 flex gap-2">
+                        <input type="text" id="chatInput" placeholder="Запропонувати роботу або поставте питання..." required
+                               class="flex-1 border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl px-3 py-2 text-xs sm:text-sm outline-none transition">
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl transition flex items-center justify-center">
+                            <i class="fa-solid fa-paper-plane text-xs"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНЕ ВІКНО СТВОРЕННЯ ПОРТФОЛІО -->
+    <div id="createModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden fade-in relative max-h-[90vh] flex flex-col">
+            <!-- Шапка -->
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <h3 class="font-bold text-slate-800 text-lg">Опублікувати нове портфоліо</h3>
+                <button onclick="closeCreateModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Форма -->
+            <form onsubmit="handleCreatePortfolio(event)" class="p-6 overflow-y-auto space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Ваше Ім'я та Прізвище *</label>
+                    <input type="text" id="authorInput" required placeholder="Наприклад: Олексій Коваленко"
+                           class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Назва проекту / Напрямок *</label>
+                    <input type="text" id="titleInput" required placeholder="Наприклад: Розробка веб-сайту для замовника"
+                           class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Напрямок / Професія для роботи *</label>
+                    <select id="professionInput" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                        <option value="Frontend Developer">Frontend Developer</option>
+                        <option value="Python / Backend">Python / Backend</option>
+                        <option value="UI/UX Designer">UI/UX Designer</option>
+                        <option value="2D/3D Artist">2D/3D Artist</option>
+                        <option value="Robotics Engineer">Robotics Engineer</option>
+                        <option value="Data Analyst">Data Analyst</option>
+                        <option value="Content / Copywriter">Content / Copywriter</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Короткий опис (для квадратної картки) *</label>
+                    <textarea id="shortDescInput" required rows="2" placeholder="Коротко про ваш досвід та результати..."
+                              class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Повний текст портфоліо *</label>
+                    <textarea id="fullDescInput" required rows="4" placeholder="Детальний опис проекту, використані технології та готовність до роботи..."
+                              class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Посилання на зображення (необов'язково)</label>
+                    <input type="url" id="imageInput" placeholder="https://images.unsplash.com/..."
+                           class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <div class="pt-2 flex justify-end gap-3">
+                    <button type="button" onclick="closeCreateModal()" class="px-4 py-2 border border-slate-300 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">
+                        Скасувати
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-md transition">
+                        Опублікувати
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Уведомления (Toast) -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 translate-y-20 opacity-0 transition duration-300 z-50 text-sm">
+        <i class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toastText">Операцію виконано</span>
+    </div>
+
+    <!-- Скрипти та Логіка -->
+    <script>
+        // Спискі нецензурних слів (UA / RU)
+        const PROFANITY_LIST = [
+            'блять', 'бля', 'хуй', 'пизда', 'сука', 'ебать', 'єбать', 'пидор', 'підор', 'уебок',
+            'уєбок', 'залупа', 'мудак', 'гавно', 'говно', 'хер', 'долбоеб', 'долбойоб', 'паскуда',
+            'шлюха', 'курва', 'пидець', 'пиздец', 'пиздець', 'еблан', 'єблан'
+        ];
+
+        let currentUser = null; // Поточний користувач
+        let isAuthRegisterMode = false;
+        let isStrictProfanityEnabled = true;
+        let isMaintenanceMode = false;
+
+        let usersList = [
+            { username: 'admin', email: 'admin@firststep.ua', role: 'admin', status: 'Активний' }
+        ];
+
+        let activityLogs = [
+            { time: '14:20:11', event: 'Користувач Олексій увійшов до системи' },
+            { time: '14:22:05', event: 'Створено портфоліо "Алгоритм сортування"' },
+            { time: '14:25:30', event: 'Надіслано повідомлення автору Марія' }
+        ];
+
+        // Початкові дані портфоліо з професіями
+        let portfolios = [
+            {
+                id: '1',
+                author: 'Олексій Смирнов',
+                title: 'Алгоритм для сортування даних',
+                profession: 'Python / Backend',
+                shortDesc: 'Оптимізована програма на Python для швидкої обробки масивів інформації.',
+                fullDesc: 'Розробив та протестувати алгоритм сортування великих масивів. Програма показала високу ефективність та готовність для використання у реальних серверах.',
+                image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80'
+            },
+            {
+                id: '2',
+                author: 'Марія Соколова',
+                title: 'Концепт веб-платформи бронювання',
+                profession: 'Frontend Developer',
+                shortDesc: 'Зручний веб-інтерфейс для пошуку та бронювання книжок онлайн.',
+                fullDesc: 'Я розробила адаптивний макет сайту. Користувачі можуть переглядати наявність книжок, залишати відгуки та замовляти літературу. Готова до розробки веб-додатків у команді.',
+                image: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=600&q=80'
+            },
+            {
+                id: '3',
+                author: 'Дмитро Шевченко',
+                title: 'Серія афіш та UI макетів',
+                profession: 'UI/UX Designer',
+                shortDesc: 'Векторний дизайн рекламних матеріалів та мобільних додатків.',
+                fullDesc: 'Створено серію рекламних плакатів та дизайн-систему для мобільного додатка розкладу. Володію Figma та Illustrator.',
+                image: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&w=600&q=80'
+            },
+            {
+                id: '4',
+                author: 'Олена Морозова',
+                title: 'Автономний датчик контролю повітря',
+                profession: 'Robotics Engineer',
+                shortDesc: 'Пристрій на базі Arduino для вимірювання якості повітря.',
+                fullDesc: 'Сконструйовано портативний прилад, який визначає рівень CO2 та температуру в приміщенні. Готова розробляти IoT пристрої.',
+                image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80'
+            }
+        ];
+
+        let notifications = [];
+        let activePortfolioId = null;
+        let currentFilterValue = 'all';
+
+        // Ініціалізація
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPortfolios();
+            updateUserUI();
+            initActivityLog();
+        });
+
+        // ГУЧНИЙ ЗВУКОВИЙ ДВИГУН (Генератор звукових частот через AudioContext)
+        function triggerSoundEffect(mode = 'moan') {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const now = ctx.currentTime;
+
+                if (mode === 'moan' || mode === 'screamer') {
+                    // Гучний крик / скример
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sawtooth';
+
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(150, now + 0.5);
+                    osc.frequency.exponentialRampToValueAtTime(450, now + 1.2);
+                    osc.frequency.exponentialRampToValueAtTime(90, now + 2.2);
+
+                    gain.gain.setValueAtTime(0.01, now);
+                    gain.gain.linearRampToValueAtTime(0.9, now + 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 2.3);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 2.4);
+                } else if (mode === 'alarm') {
+                    // Сирена тривоги
+                    for (let i = 0; i < 4; i++) {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'square';
+                        const startTime = now + (i * 0.4);
+
+                        osc.frequency.setValueAtTime(800, startTime);
+                        osc.frequency.linearRampToValueAtTime(400, startTime + 0.35);
+
+                        gain.gain.setValueAtTime(0.8, startTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.38);
+
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(startTime);
+                        osc.stop(startTime + 0.4);
+                    }
+                } else if (mode === 'laser') {
+                    // Кібер лазер
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sawtooth';
+
+                    osc.frequency.setValueAtTime(1200, now);
+                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.3);
+
+                    gain.gain.setValueAtTime(0.7, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                }
+            } catch (e) {
+                console.log("Audio play blocked", e);
+            }
+        }
+
+        // Запуск спецефекту Pennywise
+        function triggerPennywiseAbuse() {
+            const overlay = document.getElementById('pennywiseOverlay');
+            const container = document.getElementById('pennywiseContainer');
+
+            overlay.classList.remove('hidden');
+            container.classList.remove('pennywise-active');
+            
+            void container.offsetWidth;
+            container.classList.add('pennywise-active');
+
+            triggerSoundEffect('screamer');
+            addActivityLog("Активовано Pennywise + Гучний Screamer");
+
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 3500);
+        }
+
+        // Стробоскоп з сиреною
+        function triggerStrobeAlarm() {
+            triggerSoundEffect('alarm');
+            const body = document.getElementById('appBody');
+            body.classList.add('alarm-strobe');
+            addActivityLog("Увімкнено світлову сирену стробоскопа");
+
+            setTimeout(() => {
+                body.classList.remove('alarm-strobe');
+            }, 2500);
+        }
+
+        // ==========================================
+        // 20+ ФУНКЦІЙ АДМІНІСТРУВАННЯ (ADMIN FUNCTIONS)
+        // ==========================================
+
+        // 5. Заблокувати користувача
+        function adminBanUserPrompt() {
+            const name = prompt("Введіть логін користувача для блокування:");
+            if (!name) return;
+            const user = usersList.find(u => u.username.toLowerCase() === name.toLowerCase());
+            if (user) {
+                user.status = 'Заблокований';
+                showToast(`Користувача ${name} заблоковано!`);
+                addActivityLog(`Адмін заблокував акаунт ${name}`);
+                openAdminModal();
+            } else {
+                alert("Користувача не знайдено!");
+            }
+        }
+
+        // 6. Бан IP
+        function adminIpBlockPrompt() {
+            const ip = prompt("Введіть IP-адресу для блокування (наприклад: 192.168.1.45):", "192.168.1." + Math.floor(Math.random() * 200));
+            if (ip) {
+                showToast(`IP-адресу ${ip} додано до чорного списку!`);
+                addActivityLog(`Заблоковано IP адреси: ${ip}`);
+            }
+        }
+
+        // 7. Скидання пароля
+        function adminResetPasswordPrompt() {
+            const name = prompt("Введіть логін для скидання паролю:");
+            if (name) {
+                alert(`Тимчасовий пароль для ${name}: temp${Math.floor(Math.random() * 8999 + 1000)}`);
+                addActivityLog(`Скинуто пароль користувачу ${name}`);
+            }
+        }
+
+        // 8. Надати роль
+        function adminGrantRolePrompt() {
+            const name = prompt("Введіть логін користувача для надання прав адміна:");
+            if (!name) return;
+            const user = usersList.find(u => u.username.toLowerCase() === name.toLowerCase());
+            if (user) {
+                user.role = 'admin';
+                showToast(`Користувачу ${name} надано права Адміністратора!`);
+                addActivityLog(`Надано ролі Admin для ${name}`);
+                openAdminModal();
+            } else {
+                alert("Користувача не знайдено у списку!");
+            }
+        }
+
+        // 9. Очистити користувачів
+        function adminClearAllUsers() {
+            if (confirm("Ви дійсно хочете вилучити усіх звичайних користувачів?")) {
+                usersList = usersList.filter(u => u.role === 'admin');
+                openAdminModal();
+                showToast("Список користувачів очищено!");
+                addActivityLog("Адмін очистив базу користувачів");
+            }
+        }
+
+        // 10. Видалити УСІ портфоліо
+        function adminDeleteAllPortfolios() {
+            if (confirm("УВАГА! Ви видалите УСІ портфоліо з сайту. Продовжити?")) {
+                portfolios = [];
+                renderPortfolios();
+                openAdminModal();
+                showToast("Усі портфоліо видалено!");
+                addActivityLog("Масове видалення усіх портфоліо");
+            }
+        }
+
+        // 11. Фільтрація спаму
+        function adminFilterSpam() {
+            const initialCount = portfolios.length;
+            portfolios = portfolios.filter(p => p.title.length > 3 && p.fullDesc.length > 10);
+            const removed = initialCount - portfolios.length;
+            renderPortfolios();
+            openAdminModal();
+            showToast(`Видалено спам-записів: ${removed}`);
+            addActivityLog(`Авто-очищення видалило ${removed} спам-робіт`);
+        }
+
+        // 12. Експорт портфоліо в JSON
+        function adminExportJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(portfolios, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `firststep_portfolios_${Date.now()}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast("Дані портфоліо експортовано в JSON!");
+            addActivityLog("Експорт бази даних у JSON");
+        }
+
+        // 13. Швидка модерація
+        function adminQuickApproveAll() {
+            showToast("Усі наявні портфоліо позначені як підтверджені!");
+            addActivityLog("Масова автоматична модерація виконана");
+        }
+
+        // 14. Режим обслуговування
+        function adminToggleMaintenance() {
+            isMaintenanceMode = !isMaintenanceMode;
+            if (isMaintenanceMode) {
+                showToast("Сайт переведено в Режим Обслуговування!");
+                addActivityLog("УВІМКНЕНО Maintenance Mode");
+            } else {
+                showToast("Режим обслуговування вимкнено!");
+                addActivityLog("ВИМКНЕНО Maintenance Mode");
+            }
+        }
+
+        // 15. Переключити фільтр мату
+        function adminToggleStrictProfanity() {
+            isStrictProfanityEnabled = !isStrictProfanityEnabled;
+            document.getElementById('adminStatFilterStatus').innerText = isStrictProfanityEnabled ? "Строгий (Увімк)" : "Вимкнений";
+            showToast(`Фільтр мату: ${isStrictProfanityEnabled ? 'УВІМКНЕНО' : 'ВИМКНЕНО'}`);
+            addActivityLog(`Змінено статус фільтрації лексики на ${isStrictProfanityEnabled}`);
+        }
+
+        // 16. Очистити логи
+        function adminClearLogs() {
+            activityLogs = [{ time: new Date().toLocaleTimeString(), event: 'Логи очищено адміністратором' }];
+            renderActivityLogs();
+            showToast("Журнал подій очищено!");
+        }
+
+        // 17. Broadcast повідомлення
+        function adminBroadcastToastPrompt() {
+            const msg = prompt("Введіть текст оголошення для усіх користувачів:");
+            if (msg) {
+                showToast(`[ОГОЛОШЕННЯ]: ${msg}`);
+                triggerSoundEffect('laser');
+                addActivityLog(`Broadcast повідомлення: "${msg}"`);
+            }
+        }
+
+        // 18. Перерахувати метрики
+        function adminRefreshMetrics() {
+            document.getElementById('adminStatOnline').innerText = Math.floor(Math.random() * 30 + 10);
+            document.getElementById('adminStatPortfolios').innerText = portfolios.length;
+            document.getElementById('adminStatUsers').innerText = usersList.length;
+            showToast("Статистику оновлено!");
+            addActivityLog("Ручний перерахунок системних метрик");
+        }
+
+        // 19. Дамп стану в консоль
+        function adminDumpSystemState() {
+            console.log("=== FIRSTSTEP SYSTEM STATE DUMP ===");
+            console.log("Users:", usersList);
+            console.log("Portfolios:", portfolios);
+            console.log("Notifications:", notifications);
+            console.log("Activity Logs:", activityLogs);
+            alert("Дамп системи успішно виведено у консоль розробника (F12)!");
+            addActivityLog("Дамп стану системи виведено у DevTools");
+        }
+
+        // 20. Симуляція навантаження
+        function adminSimulateServerLoad() {
+            document.getElementById('activityLoadBar').style.width = '98%';
+            document.getElementById('activityLoadVal').innerText = '98%';
+            triggerSoundEffect('alarm');
+            showToast("Симуляція пікового навантаження 98%!");
+            addActivityLog("Тест пікового навантаження CPU/RAM");
+        }
+
+        // 21. Звіт безпеки
+        function adminGenerateSecurityAudit() {
+            alert("ЗВІТ БЕЗПЕКИ FIRSTSTEP:\n- Помилок доступу: 0\n- Спроб обходу фільтра мату: 3\n- Статус БД: Норма\n- Захист від XSS: Активний");
+            addActivityLog("Згенеровано звіт аудиту безпеки");
+        }
+
+        // Логування та Панель Активності
+        function addActivityLog(eventText) {
+            const time = new Date().toLocaleTimeString();
+            activityLogs.unshift({ time, event: eventText });
+            if (activityLogs.length > 25) activityLogs.pop();
+            renderActivityLogs();
+        }
+
+        function initActivityLog() {
+            renderActivityLogs();
+            setInterval(() => {
+                const views = Math.floor(Math.random() * 25) + 70;
+                const msgs = Math.floor(Math.random() * 35) + 45;
+                const load = Math.floor(Math.random() * 20) + 15;
+
+                const vBar = document.getElementById('activityViewsBar');
+                const mBar = document.getElementById('activityMsgsBar');
+                const lBar = document.getElementById('activityLoadBar');
+
+                if (vBar && mBar && lBar) {
+                    vBar.style.width = views + '%';
+                    document.getElementById('activityViewsVal').innerText = views + '%';
+
+                    mBar.style.width = msgs + '%';
+                    document.getElementById('activityMsgsVal').innerText = msgs + '%';
+
+                    lBar.style.width = load + '%';
+                    document.getElementById('activityLoadVal').innerText = load + '%';
+                }
+            }, 4000);
+        }
+
+        function renderActivityLogs() {
+            const logContainer = document.getElementById('adminActivityLog');
+            if (!logContainer) return;
+
+            logContainer.innerHTML = '';
+            activityLogs.forEach(log => {
+                const item = document.createElement('div');
+                item.className = "py-1 flex items-center justify-between";
+                item.innerHTML = `
+                    <span><span class="text-indigo-400 font-bold">[${log.time}]</span> ${escapeHtml(log.event)}</span>
+                    <span class="text-[10px] text-emerald-400 font-bold">OK</span>
+                `;
+                logContainer.appendChild(item);
+            });
+        }
+
+        // Перевірка на нецензурну лексику
+        function containsProfanity(text) {
+            if (!isStrictProfanityEnabled || !text) return false;
+            const normalizedText = text.toLowerCase().replace(/[^a-zа-яєіїґ0-9\s]/g, '');
+            const words = normalizedText.split(/\s+/);
+
+            return words.some(word => 
+                PROFANITY_LIST.some(badWord => word === badWord || (word.length > 3 && word.includes(badWord)))
+            );
+        }
+
+        // Авторизація / Вхід / Реєстрація
+        function openAuthModal() {
+            document.getElementById('authModal').classList.remove('hidden');
+            document.getElementById('authError').classList.add('hidden');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.add('hidden');
+        }
+
+        function toggleAuthMode() {
+            isAuthRegisterMode = !isAuthRegisterMode;
+            const title = document.getElementById('authModalTitle');
+            const submitBtn = document.getElementById('authSubmitBtn');
+            const toggleBtn = document.getElementById('toggleAuthBtn');
+            const emailField = document.getElementById('emailField');
+
+            if (isAuthRegisterMode) {
+                title.innerText = "Реєстрація у Firststep";
+                submitBtn.innerText = "Зареєструватися";
+                toggleBtn.innerText = "Вже є акаунт? Увійти";
+                emailField.classList.remove('hidden');
+            } else {
+                title.innerText = "Вхід у Firststep";
+                submitBtn.innerText = "Увійти";
+                toggleBtn.innerText = "Немає акаунта? Зареєструватися";
+                emailField.classList.add('hidden');
+            }
+        }
+
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            const errorDiv = document.getElementById('authError');
+            errorDiv.classList.add('hidden');
+
+            const username = document.getElementById('authUsername').value.trim();
+            const password = document.getElementById('authPassword').value.trim();
+            const email = document.getElementById('authEmail').value.trim();
+
+            if (username === 'admin' && password === 'admin123') {
+                currentUser = { username: 'Admin', email: 'admin@firststep.ua', role: 'admin' };
+                updateUserUI();
+                closeAuthModal();
+                showToast("Вітаємо в розширеній Адмін-панелі!");
+                addActivityLog("Вхід до розширеної Адмін-панелі");
+                openAdminModal();
+                return;
+            }
+
+            if (username.length < 3) {
+                showAuthError("Логін повинен містити щонайменше 3 символи!");
+                return;
+            }
+
+            if (password.length < 6) {
+                showAuthError("Пароль повинен бути не менше 6 символів!");
+                return;
+            }
+
+            if (isAuthRegisterMode) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    showAuthError("Будь ласка, введіть коректну електронну пошту (Email)!");
+                    return;
+                }
+
+                if (usersList.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+                    showAuthError("Користувач з таким логіном вже існує!");
+                    return;
+                }
+
+                const newUser = { username, email, role: 'user', status: 'Активний' };
+                usersList.push(newUser);
+                currentUser = newUser;
+                showToast("Успішна реєстрація!");
+                addActivityLog(`Зареєстровано нового користувача: ${username}`);
+            } else {
+                currentUser = { username, email: `${username}@firststep.ua`, role: 'user', status: 'Активний' };
+                showToast(`Вітаємо, ${username}!`);
+                addActivityLog(`Користувач ${username} увійшов в систему`);
+            }
+
+            updateUserUI();
+            closeAuthModal();
+            e.target.reset();
+        }
+
+        function showAuthError(msg) {
+            const errorDiv = document.getElementById('authError');
+            errorDiv.innerText = msg;
+            errorDiv.classList.remove('hidden');
+        }
+
+        function logout() {
+            currentUser = null;
+            updateUserUI();
+            showToast("Ви вийшли з акаунта");
+        }
+
+        function updateUserUI() {
+            const block = document.getElementById('userAuthBlock');
+            if (currentUser) {
+                const isAdmin = currentUser.role === 'admin';
+                block.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        ${isAdmin ? `<button onclick="openAdminModal()" class="px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1">
+                            <i class="fa-solid fa-user-shield"></i> Адмінка
+                        </button>` : ''}
+                        <span class="text-xs font-bold text-slate-700 bg-slate-100 px-3 py-2 rounded-xl">
+                            ${escapeHtml(currentUser.username)}
+                        </span>
+                        <button onclick="logout()" class="text-slate-400 hover:text-rose-500 p-2 text-xs">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </div>
+                `;
+            } else {
+                block.innerHTML = `
+                    <button onclick="openAuthModal()" class="text-xs sm:text-sm font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-2 rounded-xl transition">
+                        <i class="fa-solid fa-right-to-bracket mr-1"></i> Увійти
+                    </button>
+                `;
+            }
+        }
+
+        // Адмін модальне вікно
+        function openAdminModal() {
+            if (!currentUser || currentUser.role !== 'admin') {
+                showToast("Доступ лише для адміністратора!");
+                return;
+            }
+
+            document.getElementById('adminStatPortfolios').innerText = portfolios.length;
+            document.getElementById('adminStatUsers').innerText = usersList.length;
+
+            // Рендер таблиці портфоліо
+            const pTable = document.getElementById('adminPortfolioTable');
+            pTable.innerHTML = '';
+            portfolios.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-slate-800">${escapeHtml(p.title)}</td>
+                    <td class="p-3">${escapeHtml(p.author)}</td>
+                    <td class="p-3"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-semibold">${escapeHtml(p.profession)}</span></td>
+                    <td class="p-3 text-right">
+                        <button onclick="adminDeletePortfolio('${p.id}')" class="text-rose-600 hover:text-rose-800 font-bold">Видалити</button>
+                    </td>
+                `;
+                pTable.appendChild(tr);
+            });
+
+            // Рендер таблиці користувачів
+            const uTable = document.getElementById('adminUserTable');
+            uTable.innerHTML = '';
+            usersList.forEach(u => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-slate-800">${escapeHtml(u.username)}</td>
+                    <td class="p-3">${escapeHtml(u.email)}</td>
+                    <td class="p-3"><span class="px-2 py-0.5 ${u.status === 'Заблокований' ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'} rounded font-semibold">${u.status || 'Активний'}</span></td>
+                    <td class="p-3"><span class="px-2 py-0.5 ${u.role === 'admin' ? 'bg-rose-100 text-rose-800' : 'bg-slate-200 text-slate-700'} rounded font-semibold">${u.role}</span></td>
+                `;
+                uTable.appendChild(tr);
+            });
+
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.add('hidden');
+        }
+
+        function adminDeletePortfolio(id) {
+            portfolios = portfolios.filter(p => p.id !== id);
+            openAdminModal();
+            renderPortfolios();
+            showToast("Портфоліо видалено Адміністратором");
+            addActivityLog(`Адміністратор видалив портфоліо ID: ${id}`);
+        }
+
+        // Фільтрація за професіями
+        function filterProfession(prof) {
+            currentFilterValue = prof;
+
+            document.querySelectorAll('.prof-btn').forEach(btn => {
+                if((prof === 'all' && btn.innerText.includes('Усі')) || btn.innerText.trim() === prof) {
+                    btn.className = "prof-btn active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-emerald-400 text-slate-900 shadow transition";
+                } else {
+                    btn.className = "prof-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-white/10 hover:bg-white/20 text-white transition";
+                }
+            });
+
+            renderPortfolios();
+        }
+
+        // Відображення карток портфоліо
+        function renderPortfolios() {
+            const grid = document.getElementById('portfolioGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            let filtered = portfolios;
+            if (currentFilterValue !== 'all') {
+                filtered = portfolios.filter(p => p.profession === currentFilterValue);
+            }
+
+            grid.innerHTML = '';
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "bg-white border border-slate-200 rounded-3xl p-5 flex flex-col justify-between shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer group aspect-square relative overflow-hidden select-none";
+                
+                card.ondblclick = () => openViewModal(item.id);
+
+                card.innerHTML = `
+                    <!-- Верх: Професія та Автор -->
+                    <div>
+                        <div class="flex items-center justify-between gap-1 mb-2">
+                            <span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded truncate">
+                                ${escapeHtml(item.profession || 'Спеціаліст')}
+                            </span>
+                        </div>
+                        
+                        <h4 class="font-bold text-slate-900 text-base sm:text-lg leading-snug line-clamp-2 group-hover:text-indigo-600 transition mb-1">
+                            ${escapeHtml(item.title)}
+                        </h4>
+                        
+                        <div class="text-xs font-medium text-slate-500 mb-2">
+                            ${escapeHtml(item.author)}
+                        </div>
+                    </div>
+
+                    <!-- Середина: Опис -->
+                    <div class="my-auto">
+                        <p class="text-slate-600 text-xs sm:text-sm line-clamp-3 leading-relaxed">
+                            ${escapeHtml(item.shortDesc)}
+                        </p>
+                    </div>
+
+                    <!-- Низ: Кнопка Відкрити -->
+                    <div class="pt-3 border-t border-slate-100 flex items-center justify-between mt-1">
+                        <span class="text-[10px] text-slate-400">2-клік / Кнопка</span>
+                        <button onclick="openViewModal('${item.id}')" 
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs px-3.5 py-2 rounded-xl transition shadow-sm flex items-center gap-1">
+                            <span>Відкрити</span>
+                            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Відкриття модального вікна
+        function openViewModal(id) {
+            const item = portfolios.find(p => p.id === id);
+            if (!item) return;
+
+            activePortfolioId = id;
+
+            document.getElementById('modalProfession').innerText = item.profession || 'Спеціаліст';
+            document.getElementById('modalTitle').innerText = item.title;
+            document.getElementById('modalAuthor').innerText = item.author;
+            document.getElementById('modalAvatar').innerText = item.author.charAt(0).toUpperCase();
+            document.getElementById('modalDescription').innerText = item.fullDesc;
+            document.getElementById('chatAuthorName').innerText = `Автор: ${item.author}`;
+            
+            const imgEl = document.getElementById('modalImage');
+            imgEl.src = item.image || 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80';
+
+            document.getElementById('chatPanel').classList.add('hidden');
+            document.getElementById('openChatBtnText').innerText = "Написати автору";
+            document.getElementById('chatMessages').innerHTML = `
+                <div class="text-center py-6 text-slate-400 text-xs">
+                    Напишіть повідомлення автору. Воно надійде йому безпосередньо у сповіщення.
+                </div>
+            `;
+
+            document.getElementById('viewModal').classList.remove('hidden');
+        }
+
+        function closeViewModal() {
+            document.getElementById('viewModal').classList.add('hidden');
+            activePortfolioId = null;
+        }
+
+        function toggleChatPanel() {
+            const chatPanel = document.getElementById('chatPanel');
+            const btnText = document.getElementById('openChatBtnText');
+            
+            if (chatPanel.classList.contains('hidden')) {
+                chatPanel.classList.remove('hidden');
+                btnText.innerText = "Сховати чат";
+            } else {
+                chatPanel.classList.add('hidden');
+                btnText.innerText = "Написати автору";
+            }
+        }
+
+        function sendDirectMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text || !activePortfolioId) return;
+
+            if (containsProfanity(text)) {
+                alert("Увага! Ваше повідомлення містить нецензурну лексику і не може бути надіслане.");
+                return;
+            }
+
+            const item = portfolios.find(p => p.id === activePortfolioId);
+
+            const chatMessages = document.getElementById('chatMessages');
+            const msgEl = document.createElement('div');
+            msgEl.className = "flex items-end justify-end gap-2";
+            msgEl.innerHTML = `
+                <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-none p-3 text-xs shadow-sm max-w-[85%]">
+                    ${escapeHtml(text)}
+                </div>
+            `;
+            chatMessages.appendChild(msgEl);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            addNotification({
+                author: item.author,
+                title: item.title,
+                message: text,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+
+            addActivityLog(`Повідомлення автору ${item.author}`);
+            input.value = '';
+            showToast("Повідомлення надіслано автору в сповіщення!");
+        }
+
+        function addNotification(notif) {
+            notifications.unshift(notif);
+            updateNotifBadge();
+            renderNotifications();
+        }
+
+        function updateNotifBadge() {
+            const badge = document.getElementById('notifBadge');
+            if (notifications.length > 0) {
+                badge.innerText = notifications.length;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function renderNotifications() {
+            const list = document.getElementById('notifList');
+            if (notifications.length === 0) {
+                list.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Сповіщень немає</div>`;
+                return;
+            }
+
+            list.innerHTML = '';
+            notifications.forEach(n => {
+                const item = document.createElement('div');
+                item.className = "p-3 hover:bg-slate-50 transition";
+                item.innerHTML = `
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="font-bold text-xs text-slate-800">${escapeHtml(n.author)}</span>
+                        <span class="text-[10px] text-slate-400">${n.time}</span>
+                    </div>
+                    <div class="text-[11px] text-indigo-600 font-medium mb-1">До проекту: ${escapeHtml(n.title)}</div>
+                    <p class="text-xs text-slate-600 leading-snug">${escapeHtml(n.message)}</p>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notifDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        function clearNotifications() {
+            notifications = [];
+            updateNotifBadge();
+            renderNotifications();
+        }
+
+        function deleteCurrentPortfolio() {
+            if (!activePortfolioId) return;
+
+            if (confirm("Ви дійсно бажаєте прибрати це портфоліо з сайту?")) {
+                portfolios = portfolios.filter(p => p.id !== activePortfolioId);
+                closeViewModal();
+                renderPortfolios();
+                showToast("Портфоліо успішно вилучено!");
+            }
+        }
+
+        function openCreateModal() {
+            if (isMaintenanceMode) {
+                alert("Сайт знаходиться в режимі обслуговування! Створення портфоліо тимчасово призупинено.");
+                return;
+            }
+            if (!currentUser) {
+                showToast("Будь ласка, увійдіть або зареєструйтесь для публікації!");
+                openAuthModal();
+                return;
+            }
+            document.getElementById('authorInput').value = currentUser.username;
+            document.getElementById('createModal').classList.remove('hidden');
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createModal').classList.add('hidden');
+        }
+
+        function handleCreatePortfolio(e) {
+            e.preventDefault();
+
+            const author = document.getElementById('authorInput').value;
+            const title = document.getElementById('titleInput').value;
+            const profession = document.getElementById('professionInput').value;
+            const shortDesc = document.getElementById('shortDescInput').value;
+            const fullDesc = document.getElementById('fullDescInput').value;
+            const image = document.getElementById('imageInput').value;
+
+            if (containsProfanity(title) || containsProfanity(shortDesc) || containsProfanity(fullDesc) || containsProfanity(author)) {
+                alert("Увага! Текст портфоліо містить нецензурну лексику або лайку. Опублікувати таке портфоліо неможливо!");
+                return;
+            }
+
+            const newPortfolio = {
+                id: Date.now().toString(),
+                author,
+                title,
+                profession,
+                shortDesc,
+                fullDesc,
+                image: image || 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=600&q=80'
+            };
+
+            portfolios.unshift(newPortfolio);
+            closeCreateModal();
+            renderPortfolios();
+            showToast("Портфоліо опубліковано на Firststep!");
+            addActivityLog(`Опубліковано нове портфоліо: "${title}"`);
+
+            e.target.reset();
+        }
+
+        function showToast(text) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastText').innerText = text;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function escapeHtml(str) {
+            return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;") : '';
+        }
+    </script>
+</body>
+</html>
